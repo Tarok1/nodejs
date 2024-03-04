@@ -1,10 +1,10 @@
 const path = require('path');
 
 const express = require('express');
-const session = require('express-session');
-const MongoDbStore = require('connect-mongodb-session')(session);
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const session = require('express-session');
+const MongoDBStore = require('connect-mongodb-session')(session);
 
 const errorController = require('./controllers/error');
 const User = require('./models/user');
@@ -12,7 +12,7 @@ const User = require('./models/user');
 const MONGODB_URI = 'mongodb+srv://tarok:170894@clusters.tyrilpz.mongodb.net/shop?w=majority&appName=Clusters';
 
 const app = express();
-const store = new MongoDbStore({
+const store = new MongoDBStore({
   uri: MONGODB_URI,
   collection: 'sessions'
 });
@@ -26,28 +26,26 @@ const authRoutes = require('./routes/auth');
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(session({
-  secret: 'my secret',
-  resave: false,
-  saveUninitialized: false,
-  store: store,
-}));
+app.use(
+  session({
+    secret: 'my secret',
+    resave: false,
+    saveUninitialized: false,
+    store: store
+  })
+);
 
 app.use((req, res, next) => {
   if (!req.session.user) {
     return next();
-  } 
-
+  }
   User.findById(req.session.user._id)
-  .then((user) => {
+    .then(user => {
       req.user = user;
-      
       next();
-  })
-  .catch((error) => {
-      console.log(error)
-  });
-})
+    })
+    .catch(err => console.log(err));
+});
 
 app.use('/admin', adminRoutes);
 app.use(shopRoutes);
@@ -61,8 +59,8 @@ mongoose
     User.findOne().then(user => {
       if (!user) {
         const user = new User({
-          name: 'John',
-          email: 'john@gmail.com',
+          name: 'Max',
+          email: 'max@test.com',
           cart: {
             items: []
           }
